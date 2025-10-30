@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, Ticket } from '../lib/supabase'
-import { Plus, Search } from 'lucide-react'
+import { Plus, Search, Sparkles, Loader } from 'lucide-react'
 
 const STATUSES = ['New', 'In Progress', 'Pending', 'Resolved', 'Closed']
 const PRIORITIES = ['Low', 'Medium', 'High', 'Urgent']
@@ -215,6 +215,44 @@ function AddTicketModal({ onClose, onSuccess }: { onClose: () => void; onSuccess
     status: 'New',
   })
   const [saving, setSaving] = useState(false)
+  const [classifying, setClassifying] = useState(false)
+  const [aiSuggestion, setAiSuggestion] = useState<any>(null)
+
+  async function handleAutoClassify() {
+    if (!formData.title || !formData.description) {
+      alert('Please enter title and description first')
+      return
+    }
+
+    try {
+      setClassifying(true)
+      const { data, error } = await supabase.functions.invoke('ai-ticket-classification', {
+        body: {
+          title: formData.title,
+          description: formData.description
+        }
+      })
+
+      if (error) throw error
+
+      const classification = data?.data
+      setAiSuggestion(classification)
+
+      // Auto-fill the form with AI suggestions
+      if (classification) {
+        setFormData({
+          ...formData,
+          priority: classification.priority.charAt(0).toUpperCase() + classification.priority.slice(1),
+          status: classification.suggestedStatus?.charAt(0).toUpperCase() + classification.suggestedStatus?.slice(1).replace('_', ' ') || 'New'
+        })
+      }
+    } catch (error: any) {
+      console.error('Error classifying ticket:', error)
+      alert(error.message || 'Failed to classify ticket. Please check your AI settings.')
+    } finally {
+      setClassifying(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -262,6 +300,39 @@ function AddTicketModal({ onClose, onSuccess }: { onClose: () => void; onSuccess
               rows={4}
               className="w-full px-4 py-3 rounded-md border border-neutral-200 dark:border-neutral-dark-700 bg-surface focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
+          </div>
+
+          {/* AI Auto-Classify Button */}
+          <div>
+            <button
+              type="button"
+              onClick={handleAutoClassify}
+              disabled={classifying || !formData.title || !formData.description}
+              className="w-full h-10 bg-primary-500/10 text-primary-500 rounded-md font-medium hover:bg-primary-500/20 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
+            >
+              {classifying ? (
+                <>
+                  <Loader size={16} className="animate-spin" />
+                  Classifying...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={16} />
+                  AI Auto-Classify
+                </>
+              )}
+            </button>
+            {aiSuggestion && (
+              <div className="mt-2 p-3 bg-info-500/10 border border-info-500/20 rounded-md">
+                <p className="text-xs font-medium text-info-500 mb-1">AI Reasoning:</p>
+                <p className="text-xs text-secondary">{aiSuggestion.reasoning}</p>
+                {aiSuggestion.category && (
+                  <p className="text-xs text-secondary mt-1">
+                    <span className="font-medium">Category:</span> {aiSuggestion.category}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

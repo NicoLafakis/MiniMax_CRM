@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, Deal } from '../lib/supabase'
-import { Plus, DollarSign } from 'lucide-react'
+import { Plus, DollarSign, Sparkles } from 'lucide-react'
+import AIInsights from '../components/AIInsights'
 
 const STAGES = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost']
 
@@ -95,32 +96,11 @@ export default function DealsPage() {
 
                     <div className="space-y-3 max-h-[600px] overflow-y-auto scrollbar-thin">
                       {stageDeals.map((deal) => (
-                        <div
+                        <DealCard
                           key={deal.id}
-                          className="bg-page dark:bg-neutral-dark-900 rounded-md p-4 hover:shadow-md transition-shadow"
-                          data-component="deal-card"
-                        >
-                          <h3 className="font-semibold mb-2 truncate">{deal.title}</h3>
-                          <div className="flex items-center gap-2 text-lg font-bold text-primary-500 mb-2">
-                            <DollarSign size={18} />
-                            {parseFloat(String(deal.value)).toLocaleString()}
-                          </div>
-                          {deal.expected_close_date && (
-                            <p className="text-xs text-secondary">
-                              Expected: {new Date(deal.expected_close_date).toLocaleDateString()}
-                            </p>
-                          )}
-                          
-                          <select
-                            value={deal.stage}
-                            onChange={(e) => updateDealStage(deal.id, e.target.value)}
-                            className="w-full mt-3 h-8 px-2 text-sm rounded border border-neutral-200 dark:border-neutral-dark-700 bg-surface focus:outline-none focus:ring-2 focus:ring-primary-500"
-                          >
-                            {STAGES.map(s => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
-                        </div>
+                          deal={deal}
+                          onStageChange={updateDealStage}
+                        />
                       ))}
                       
                       {stageDeals.length === 0 && (
@@ -136,6 +116,52 @@ export default function DealsPage() {
       )}
 
       {showModal && <AddDealModal onClose={() => setShowModal(false)} onSuccess={loadDeals} />}
+    </div>
+  )
+}
+
+function DealCard({ deal, onStageChange }: { deal: Deal; onStageChange: (id: string, stage: string) => void }) {
+  const [showAIInsights, setShowAIInsights] = useState(false)
+
+  return (
+    <div
+      className="bg-page dark:bg-neutral-dark-900 rounded-md p-4 hover:shadow-md transition-shadow"
+      data-component="deal-card"
+    >
+      <h3 className="font-semibold mb-2 truncate">{deal.title}</h3>
+      <div className="flex items-center gap-2 text-lg font-bold text-primary-500 mb-2">
+        <DollarSign size={18} />
+        {parseFloat(String(deal.value)).toLocaleString()}
+      </div>
+      {deal.expected_close_date && (
+        <p className="text-xs text-secondary">
+          Expected: {new Date(deal.expected_close_date).toLocaleDateString()}
+        </p>
+      )}
+
+      <select
+        value={deal.stage}
+        onChange={(e) => onStageChange(deal.id, e.target.value)}
+        className="w-full mt-3 h-8 px-2 text-sm rounded border border-neutral-200 dark:border-neutral-dark-700 bg-surface focus:outline-none focus:ring-2 focus:ring-primary-500"
+      >
+        {STAGES.map(s => (
+          <option key={s} value={s}>{s}</option>
+        ))}
+      </select>
+
+      <button
+        onClick={() => setShowAIInsights(!showAIInsights)}
+        className="w-full mt-2 h-8 px-2 text-xs bg-primary-500/10 text-primary-500 rounded hover:bg-primary-500/20 flex items-center justify-center gap-1 transition-colors"
+      >
+        <Sparkles size={12} />
+        {showAIInsights ? 'Hide AI Score' : 'Get AI Score'}
+      </button>
+
+      {showAIInsights && (
+        <div className="mt-3 p-3 bg-surface rounded-md border border-neutral-200 dark:border-neutral-dark-700">
+          <AIInsights type="deal" entityId={deal.id} />
+        </div>
+      )}
     </div>
   )
 }
