@@ -1,0 +1,84 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Build output
+dist/
+build/
+.vite/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.classpath
+.c9/
+*.sublime-workspace
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# File uploads
+uploads/
+public/uploads/
+
+# Backend specific
+crm-mysql-backend/uploads/
+crm-mysql-backend/.vite-temp/
+
+# Frontend specific
+crm-mysql-frontend/dist/
+crm-mysql-frontend/.vite/
+
+# Database files
+*.sql
+database.sqlite
+database.sqlite3
+
+# Process manager
+.pm2/
+
+# IDE
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# Misc
+.cache/
+*.bak
+*.backup
