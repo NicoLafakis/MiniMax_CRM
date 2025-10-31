@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { Attachment } from '../lib/supabase'
+import { Attachment } from '../lib/api'
 import { attachmentsAPI } from '../lib/api'
 import { Upload, FileText, Download, Trash2, Loader } from 'lucide-react'
 
@@ -15,14 +15,10 @@ export default function FileAttachments({ relatedType, relatedId }: FileAttachme
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadAttachments()
-  }, [relatedId])
-
   async function loadAttachments() {
     try {
       setLoading(true)
-      const data = await attachmentsAPI.getAll(relatedType, relatedId)
+      const { data } = await attachmentsAPI.getAll(relatedType, relatedId)
       setAttachments(data || [])
     } catch (error) {
       console.error('Error loading attachments:', error)
@@ -30,6 +26,11 @@ export default function FileAttachments({ relatedType, relatedId }: FileAttachme
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadAttachments()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [relatedId])
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -63,7 +64,7 @@ export default function FileAttachments({ relatedType, relatedId }: FileAttachme
 
   async function handleDownload(attachmentId: string, fileName: string) {
     try {
-      const blob = await attachmentsAPI.download(attachmentId)
+      const { data: blob } = await attachmentsAPI.download(attachmentId)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

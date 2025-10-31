@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Customer, Activity } from '../lib/supabase'
+import { Customer, Activity } from '../lib/api'
 import { customersAPI, activitiesAPI } from '../lib/api'
 import { Mail, Phone, Building, MapPin, ArrowLeft, Plus, Send } from 'lucide-react'
 import FileAttachments from '../components/FileAttachments'
@@ -16,23 +16,17 @@ export default function CustomerDetailPage() {
   const [showActivityModal, setShowActivityModal] = useState(false)
   const [showEmailComposer, setShowEmailComposer] = useState(false)
 
-  useEffect(() => {
-    if (user && id) {
-      loadCustomerData()
-    }
-  }, [user, id])
-
   async function loadCustomerData() {
     try {
       setLoading(true)
       
       // Get customer data
-      const customerData = await customersAPI.getOne(id!)
+      const { data: customerData } = await customersAPI.getOne(id!)
       setCustomer(customerData)
 
       // Get all activities and filter by customer_id
-      const allActivities = await activitiesAPI.getAll()
-      const customerActivities = allActivities.filter(activity => activity.customer_id === id)
+      const { data: allActivities } = await activitiesAPI.getAll()
+      const customerActivities = allActivities.filter((activity: Activity) => activity.customer_id === id)
       setActivities(customerActivities)
     } catch (error) {
       console.error('Error loading customer:', error)
@@ -40,6 +34,13 @@ export default function CustomerDetailPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (user && id) {
+      loadCustomerData()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, id])
 
   if (loading) {
     return (

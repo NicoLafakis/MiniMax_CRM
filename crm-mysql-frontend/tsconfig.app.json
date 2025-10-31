@@ -26,6 +26,7 @@
     "jsx": "react-jsx",
     /* Linting */
     "strict": false,
+    "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../lib/supabase'
+import { activitiesAPI } from '../lib/api'
 import { X } from 'lucide-react'
 
 type EmailComposerProps = {
@@ -32,15 +32,10 @@ export default function EmailComposer({ onClose, customerId, recipientEmail, rec
         subject: formData.subject,
         description: `To: ${formData.to}\n\n${formData.body}`,
         customer_id: customerId || null,
-        user_id: user.id,
         completed: true,
       }
 
-      const { error } = await supabase
-        .from('activities')
-        .insert([activityData])
-
-      if (error) throw error
+      await activitiesAPI.create(activityData)
 
       alert('Email logged successfully! Note: This is a demo CRM - actual email sending would require email service integration.')
       onClose()
@@ -59,6 +54,7 @@ export default function EmailComposer({ onClose, customerId, recipientEmail, rec
           <h2 className="text-2xl font-bold">Compose Email</h2>
           <button
             onClick={onClose}
+            aria-label="Close email composer"
             className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-dark-800 rounded-md"
           >
             <X size={20} />
